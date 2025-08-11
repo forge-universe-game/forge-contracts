@@ -1,0 +1,22 @@
+name: release
+on:
+  push:
+    tags:
+      - 'v*'
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 20 }
+      - run: npm ci && npx hardhat compile
+      - name: Package ABIs
+        run: |
+          mkdir -p dist/abis
+          cp -r artifacts/contracts/* dist/abis || true
+          tar -czf abis.tgz dist/abis
+      - name: Create Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: abis.tgz
